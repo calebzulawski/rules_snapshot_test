@@ -1,0 +1,2 @@
+The current time in UTC is REDACTED
+The current time in EST is REDACTED

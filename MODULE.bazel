@@ -1,0 +1,6 @@
+module(
+    name = "rules_snapshot_test",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_python", version = "1.7.0")

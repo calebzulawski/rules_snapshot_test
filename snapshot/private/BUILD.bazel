@@ -1,0 +1,8 @@
+py_binary(
+    name = "runner",
+    srcs = ["runner_main.py"],
+    main = "runner_main.py",
+    python_version = "PY3",
+    deps = ["@rules_python//python/runfiles"],
+    visibility = ["//snapshot:__pkg__"],
+)

@@ -1,0 +1,21 @@
+load("@rules_snapshot_test//snapshot:snapshot_test.bzl", "snapshot_format", "snapshot_test")
+
+py_binary(
+    name = "snapshot_demo_test",
+    srcs = ["snapshot_demo_test.py"],
+    deps = ["//app:report"],
+)
+
+snapshot_format(
+    name = "text_format",
+    normalize = ["//tools:strip_timestamps"],
+    compare = "@rules_snapshot_test//compare:text",
+)
+
+snapshot_test(
+    name = "snapshot_demo",
+    test = ":snapshot_demo_test",
+    outputs = {
+        "data.txt": ":text_format",
+    },
+)

@@ -1,0 +1,15 @@
+py_binary(
+    name = "text",
+    srcs = ["text.py"],
+    main = "text.py",
+    python_version = "PY3",
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "binary",
+    srcs = ["binary.py"],
+    main = "binary.py",
+    python_version = "PY3",
+    visibility = ["//visibility:public"],
+)

@@ -1,4 +1,4 @@
-load("@rules_snapshot_test//snapshot:snapshot_test.bzl", "snapshot_format", "snapshot_test")
+load("@rules_snapshot_test//snapshot:snapshot_test.bzl", "snapshot_format", "snapshot_test", "update_all")
 
 py_binary(
     name = "demo_test",
@@ -27,4 +27,8 @@ snapshot_test(
     outputs = {
         "data.txt": ":text",
     },
+)
+
+update_all(
+    name = "update_all",
 )

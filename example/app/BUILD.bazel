@@ -1,5 +1,5 @@
 py_library(
-    name = "report",
+    name = "app",
     srcs = ["report.py"],
     visibility = ["//visibility:public"],
 )

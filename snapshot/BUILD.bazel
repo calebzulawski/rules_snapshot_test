@@ -1,0 +1,6 @@
+load("//snapshot/private:update_target.bzl", "snapshot_update_target")
+
+snapshot_update_target(
+    name = "update",
+    visibility = ["//visibility:public"],
+)

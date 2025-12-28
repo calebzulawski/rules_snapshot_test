@@ -6,3 +6,11 @@ py_binary(
     deps = ["@rules_python//python/runfiles"],
     visibility = ["//snapshot:__pkg__"],
 )
+
+py_binary(
+    name = "update",
+    srcs = ["update_main.py"],
+    main = "update_main.py",
+    python_version = "PY3",
+    visibility = ["//snapshot:__pkg__"],
+)

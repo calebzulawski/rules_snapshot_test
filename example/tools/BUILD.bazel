@@ -1,5 +1,5 @@
 py_binary(
-    name = "strip_timestamps",
+    name = "strip_ts",
     srcs = ["strip_timestamps.py"],
     main = "strip_timestamps.py",
     visibility = ["//visibility:public"],

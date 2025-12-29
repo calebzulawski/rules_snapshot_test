@@ -1,0 +1,30 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: Run tests
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2025]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: bazel-contrib/setup-bazel@0.16.0
+        with:
+          bazelisk-cache: true
+
+      - name: Run example
+        run: bazel test //... --test_output=all
+        working-directory: example
+        shell: bash

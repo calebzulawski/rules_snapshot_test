@@ -121,6 +121,9 @@ def run_normalizers(runfiles_ctx, raw_path, normalized_path, tools):
         cmd = [tool_path, current_in, current_out]
         print("[snapshot] normalize step {}: {}".format(index, " ".join(cmd)))
         subprocess.run(cmd, check=True)
+        if current_in not in (raw_path, normalized_path):
+            if os.path.exists(current_in):
+                os.remove(current_in)
         current_in = current_out
 
 

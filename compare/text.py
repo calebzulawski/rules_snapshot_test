@@ -3,6 +3,7 @@
 
 import argparse
 import difflib
+import filecmp
 import sys
 
 
@@ -17,11 +18,11 @@ def main():
     parser.add_argument("snapshot", help="Path to the snapshot file.")
     args = parser.parse_args()
 
+    if filecmp.cmp(args.normalized, args.snapshot, shallow=False):
+        return 0
+
     normalized = read_lines(args.normalized)
     golden = read_lines(args.snapshot)
-
-    if normalized == golden:
-        return 0
 
     diff = difflib.unified_diff(
         golden,

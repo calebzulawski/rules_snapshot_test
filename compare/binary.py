@@ -2,20 +2,9 @@
 """Binary comparator that checks for byte-for-byte equality."""
 
 import argparse
+import filecmp
+import os
 import sys
-
-
-def read_bytes(path):
-    with open(path, "rb") as handle:
-        return handle.read()
-
-
-def describe_mismatch(expected, actual):
-    max_len = min(len(expected), len(actual))
-    for index in range(max_len):
-        if expected[index] != actual[index]:
-            return index
-    return max_len
 
 
 def main():
@@ -24,18 +13,15 @@ def main():
     parser.add_argument("snapshot", help="Path to the snapshot file.")
     args = parser.parse_args()
 
-    normalized = read_bytes(args.normalized)
-    golden = read_bytes(args.snapshot)
-
-    if normalized == golden:
+    if filecmp.cmp(args.snapshot, args.normalized, shallow=False):
         return 0
 
-    offset = describe_mismatch(golden, normalized)
+    golden_size = os.stat(args.snapshot).st_size
+    output_size = os.stat(args.normalized).st_size
     print(
-        "Binary snapshot mismatch at byte {} (snapshot size={}, normalized size={})".format(
-            offset,
-            len(golden),
-            len(normalized),
+        "Binary snapshot mismatch (snapshot size={}, test output size={})".format(
+            golden_size,
+            output_size,
         ),
         file=sys.stderr,
     )

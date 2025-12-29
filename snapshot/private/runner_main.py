@@ -23,8 +23,7 @@ def main():
 
 def load_config(runfiles_ctx):
     key = os.environ.get("SNAPSHOT_CONFIG")
-    if not key:
-        sys.exit("[snapshot] SNAPSHOT_CONFIG is not set")
+    assert key, "SNAPSHOT_CONFIG is not set"
     config_path = rlocation(runfiles_ctx, key)
     with open(config_path, "r", encoding="utf-8") as handle:
         return json.load(handle)
@@ -32,8 +31,7 @@ def load_config(runfiles_ctx):
 
 def resolve_base_dir():
     base_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR")
-    if not base_dir:
-        sys.exit("[snapshot] TEST_UNDECLARED_OUTPUTS_DIR is not set")
+    assert base_dir, "TEST_UNDECLARED_OUTPUTS_DIR is not set"
     return base_dir
 
 
@@ -102,8 +100,7 @@ def assign_formats(raw_dir, formats):
 
 def rlocation(r, path):
     location = r.Rlocation(path)
-    if not location:
-        sys.exit("[snapshot] missing runfile {}".format(path))
+    assert location, "missing runfile {}".format(path)
     return location
 
 

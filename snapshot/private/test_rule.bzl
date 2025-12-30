@@ -118,13 +118,7 @@ def _snapshot_rule_test_impl(ctx):
     ctx.actions.write(config_file, config_literal + "\n")
 
     runfiles = _gather_runfiles(ctx, extra_files = [config_file])
-
-    launcher = ctx.actions.declare_file(ctx.label.name + "_runner")
-    ctx.actions.symlink(
-        output = launcher,
-        target_file = ctx.executable._runner,
-        is_executable = True,
-    )
+    launcher = _symlink_runner_files(ctx)
 
     return [
         DefaultInfo(
@@ -160,6 +154,22 @@ _snapshot_rule_test = rule(
         ),
     },
 )
+
+def _symlink_runner_files(ctx):
+    files = sorted(
+        ctx.attr._runner[DefaultInfo].files.to_list(),
+        key = lambda f: f.short_path,
+    )
+    executable = None
+    for file in files:
+        output = ctx.actions.declare_file("{}_{}".format(ctx.label.name, file.basename))
+        ctx.actions.symlink(
+            output = output,
+            target_file = file,
+        )
+        if file.short_path == ctx.executable._runner.short_path:
+            executable = output
+    return executable
 
 def snapshot_test(name, **kwargs):
     """

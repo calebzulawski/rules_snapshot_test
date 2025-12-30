@@ -118,11 +118,13 @@ def _snapshot_rule_test_impl(ctx):
     ctx.actions.write(config_file, config_literal + "\n")
 
     runfiles = _gather_runfiles(ctx, extra_files = [config_file])
-    launcher = _symlink_runner_files(ctx)
+    runner_outputs = _symlink_runner_files(ctx)
+    launcher = runner_outputs.executable
 
     return [
         DefaultInfo(
             executable = launcher,
+            files = depset(runner_outputs.files),
             runfiles = runfiles,
         ),
         testing.TestEnvironment({
@@ -156,20 +158,26 @@ _snapshot_rule_test = rule(
 )
 
 def _symlink_runner_files(ctx):
-    files = sorted(
-        ctx.attr._runner[DefaultInfo].files.to_list(),
-        key = lambda f: f.short_path,
+    runner_info = ctx.attr._runner[DefaultInfo]
+    all_files = runner_info.files.to_list() + runner_info.default_runfiles.files.to_list()
+    executable = ctx.executable._runner
+    zip_file = None
+    for file in all_files:
+        if file.basename.lower().endswith(".zip"):
+            zip_file = file
+            break
+    outputs = []
+    exec_output = ctx.actions.declare_file("{}_{}".format(ctx.label.name, executable.basename))
+    ctx.actions.symlink(output = exec_output, target_file = executable)
+    outputs.append(exec_output)
+    if zip_file:
+        zip_output = ctx.actions.declare_file("{}_{}".format(ctx.label.name, zip_file.basename))
+        ctx.actions.symlink(output = zip_output, target_file = zip_file)
+        outputs.append(zip_output)
+    return struct(
+        executable = exec_output,
+        files = outputs,
     )
-    executable = None
-    for file in files:
-        output = ctx.actions.declare_file("{}_{}".format(ctx.label.name, file.basename))
-        ctx.actions.symlink(
-            output = output,
-            target_file = file,
-        )
-        if file.short_path == ctx.executable._runner.short_path:
-            executable = output
-    return executable
 
 def snapshot_test(name, **kwargs):
     """

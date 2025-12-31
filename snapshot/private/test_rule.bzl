@@ -1,4 +1,5 @@
 load("//snapshot/private:update_rule.bzl", "snapshot_update_rule")
+load("//snapshot/private:command_tool.bzl", "SnapshotCommandInfo")
 
 def _rlocation(ctx, target):
     return ctx.expand_location("$(rlocationpath %s)" % target.label, [target])
@@ -37,6 +38,38 @@ def _snapshot_format_impl(ctx):
         ),
     ]
 
+def _normalizer_spec(ctx, target):
+    if SnapshotCommandInfo in target:
+        info = target[SnapshotCommandInfo]
+        return {
+            "executable": info.executable,
+            "args": info.args,
+            "env": info.env,
+            "stdout": info.stdout,
+        }
+    return {
+        "executable": _rlocation(ctx, target),
+        "args": ["{INPUT}", "{OUTPUT}"],
+        "env": {},
+        "stdout": False,
+    }
+
+def _comparator_spec(ctx, target):
+    if SnapshotCommandInfo in target:
+        info = target[SnapshotCommandInfo]
+        return {
+            "executable": info.executable,
+            "args": info.args,
+            "env": info.env,
+            "stdout": False,
+        }
+    return {
+        "executable": _rlocation(ctx, target),
+        "args": ["{SNAPSHOT}", "{OUTPUT}"],
+        "env": {},
+        "stdout": False,
+    }
+
 snapshot_format = rule(
     implementation = _snapshot_format_impl,
     doc = "Defines the normalization and comparison tools used for a set of snapshot files.",
@@ -44,12 +77,11 @@ snapshot_format = rule(
         "normalize": attr.label_list(
             allow_files = True,
             cfg = "exec",
-            doc = "Executable targets run sequentially on each matched file, preprocessing the file for comparison. Each receives the input path and output path as arguments.",
+            doc = "Executable targets or snapshot_normalizer rules run sequentially on each matched file, preprocessing the file for comparison.",
         ),
         "compare": attr.label(
-            executable = True,
             cfg = "exec",
-            doc = "Executable target that compares each test output to its snapshot. Receives the normalized file path and the snapshot file path as arguments. A non-zero return value is interpreted as a failure.",
+            doc = "Executable target or snapshot_comparator rule that compares each test output to its snapshot.",
         ),
     },
 )
@@ -66,8 +98,8 @@ def _build_config(ctx):
         if compare_target == None:
             fail("snapshot_format '{}' must set a compare tool".format(format_target.label))
 
-        normalize_paths = [_rlocation(ctx, target) for target in normalize_targets]
-        compare_path = _rlocation(ctx, compare_target)
+        normalize_paths = [_normalizer_spec(ctx, target) for target in normalize_targets]
+        compare_path = _comparator_spec(ctx, compare_target)
         formats.append({
             "label": str(format_target.label),
             "name": format_target.label.name,

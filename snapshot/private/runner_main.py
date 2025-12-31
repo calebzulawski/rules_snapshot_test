@@ -110,7 +110,7 @@ def run_normalizers(runfiles_ctx, raw_path, normalized_path, tools):
         return
     current_in = raw_path
     for index, tool in enumerate(tools):
-        tool_path = rlocation(runfiles_ctx, tool)
+        tool_path = rlocation(runfiles_ctx, tool["executable"])
         if index == len(tools) - 1:
             current_out = normalized_path
         else:
@@ -118,9 +118,20 @@ def run_normalizers(runfiles_ctx, raw_path, normalized_path, tools):
         parent = os.path.dirname(current_out)
         if parent:
             os.makedirs(parent, exist_ok=True)
-        cmd = [tool_path, current_in, current_out]
+        mapping = {"{INPUT}": current_in, "{OUTPUT}": current_out}
+        cmd = [tool_path] + _apply_substitutions(tool["args"], mapping)
+        env = _apply_env(tool["env"], mapping)
         print("[snapshot] normalize step {}: {}".format(index, " ".join(cmd)))
-        subprocess.run(cmd, check=True)
+        if tool.get("stdout"):
+            result = subprocess.run(cmd, env=env, stdout=subprocess.PIPE)
+            if result.returncode != 0:
+                sys.exit(result.returncode)
+            with open(current_out, "wb") as handle:
+                handle.write(result.stdout)
+        else:
+            result = subprocess.run(cmd, env=env)
+            if result.returncode != 0:
+                sys.exit(result.returncode)
         if current_in not in (raw_path, normalized_path):
             if os.path.exists(current_in):
                 os.remove(current_in)
@@ -128,10 +139,16 @@ def run_normalizers(runfiles_ctx, raw_path, normalized_path, tools):
 
 
 def run_comparator(runfiles_ctx, format_cfg, normalized_path, snapshot_path, rel_path):
-    comparator_path = rlocation(runfiles_ctx, format_cfg["compare"])
-    cmd = [comparator_path, normalized_path, snapshot_path]
+    comparator_spec = format_cfg["compare"]
+    comparator_path = rlocation(runfiles_ctx, comparator_spec["executable"])
+    mapping = {
+        "{OUTPUT}": normalized_path,
+        "{SNAPSHOT}": snapshot_path,
+    }
+    cmd = [comparator_path] + _apply_substitutions(comparator_spec["args"], mapping)
+    env = _apply_env(comparator_spec["env"], mapping)
     print("[snapshot] compare {} using {}: {}".format(rel_path, format_cfg["label"], " ".join(cmd)))
-    result = subprocess.run(cmd)
+    result = subprocess.run(cmd, env=env)
     if result.returncode != 0:
         print("[snapshot] comparator failed for {}".format(rel_path), file=sys.stderr)
         sys.exit("[snapshot] comparator failed for {}".format(rel_path))
@@ -149,6 +166,26 @@ def resolve_snapshot_path(r, config, rel_path):
 
 def _is_glob(pattern):
     return any(char in pattern for char in ["*", "?", "["])
+
+
+def _apply_substitutions(values, mapping):
+    result = []
+    for value in values:
+        expanded = value
+        for key, replacement in mapping.items():
+            expanded = expanded.replace(key, replacement)
+        result.append(expanded)
+    return result
+
+
+def _apply_env(env, mapping):
+    result = os.environ.copy()
+    for key, value in env.items():
+        expanded = value
+        for token, replacement in mapping.items():
+            expanded = expanded.replace(token, replacement)
+        result[key] = expanded
+    return result
 
 
 

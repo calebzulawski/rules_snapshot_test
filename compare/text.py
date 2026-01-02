@@ -32,7 +32,6 @@ def main():
         lineterm="",
         n=3,
     )
-    print("Snapshot mismatch detected:", file=sys.stderr)
     for line in diff:
         print(line, file=sys.stderr)
     return 1

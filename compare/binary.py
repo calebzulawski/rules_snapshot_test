@@ -3,7 +3,6 @@
 
 import argparse
 import filecmp
-import os
 import sys
 
 
@@ -16,15 +15,7 @@ def main():
     if filecmp.cmp(args.snapshot, args.normalized, shallow=False):
         return 0
 
-    golden_size = os.stat(args.snapshot).st_size
-    output_size = os.stat(args.normalized).st_size
-    print(
-        "Binary snapshot mismatch (snapshot size={}, test output size={})".format(
-            golden_size,
-            output_size,
-        ),
-        file=sys.stderr,
-    )
+    print("Binary snapshot mismatch.", file=sys.stderr)
     return 1
 
 

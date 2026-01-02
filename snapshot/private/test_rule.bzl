@@ -28,13 +28,15 @@ def _gather_runfiles(ctx, extra_files):
 
     return runfiles.merge(ctx.runfiles(files = ctx.files.snapshots))
 
-_SnapshotFormatInfo = provider(fields = ["normalize", "compare"])
+_SnapshotFormatInfo = provider(fields = ["normalize", "compare", "display_name"])
 
 def _snapshot_format_impl(ctx):
+    display_name = ctx.attr.display_name or ctx.label.name
     return [
         _SnapshotFormatInfo(
             normalize = ctx.attr.normalize,
             compare = ctx.attr.compare,
+            display_name = display_name,
         ),
     ]
 
@@ -74,6 +76,9 @@ snapshot_format = rule(
     implementation = _snapshot_format_impl,
     doc = "Defines the normalization and comparison tools used for a set of snapshot files.",
     attrs = {
+        "display_name": attr.string(
+            doc = "Display name used in test output. Defaults to the snapshot_format rule name.",
+        ),
         "normalize": attr.label_list(
             allow_files = True,
             cfg = "exec",
@@ -101,8 +106,7 @@ def _build_config(ctx):
         normalize_paths = [_normalizer_spec(ctx, target) for target in normalize_targets]
         compare_path = _comparator_spec(ctx, compare_target)
         formats.append({
-            "label": str(format_target.label),
-            "name": format_target.label.name,
+            "display_name": info.display_name,
             "patterns": [pattern],
             "normalize": normalize_paths,
             "compare": compare_path,
@@ -115,6 +119,11 @@ def _build_config(ctx):
     snapshot_repo = ctx.workspace_name or "_main"
     snapshot_package = ctx.label.package
     snapshot_dir = "snapshots/%s" % ctx.label.name
+    snapshot_root_parts = []
+    if snapshot_package:
+        snapshot_root_parts.append(snapshot_package.strip("/"))
+    snapshot_root_parts.append(snapshot_dir.strip("/"))
+    snapshot_rel_root = "/".join(snapshot_root_parts)
     snapshot_parts = []
     if snapshot_repo:
         snapshot_parts.append(snapshot_repo.strip("/"))
@@ -128,6 +137,9 @@ def _build_config(ctx):
         "test_env": _expand_env(ctx, deps_for_expansion),
         "formats": formats,
         "snapshot_prefix": snapshot_prefix,
+        "snapshot_rel_root": snapshot_rel_root,
+        "test_package": ctx.attr.test.label.package,
+        "test_name": ctx.attr.test.label.name,
     }
 
 def _expand_args(ctx, deps):

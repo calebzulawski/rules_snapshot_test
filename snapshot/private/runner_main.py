@@ -203,8 +203,8 @@ def run_comparator(
     comparator_spec = format_cfg["compare"]
     comparator_path = rlocation(runfiles_ctx, comparator_spec["executable"])
     mapping = {
-        "{OUTPUT}": os.path.relpath(normalized_path),
-        "{SNAPSHOT}": os.path.relpath(snapshot_path),
+        "{OUTPUT}": _safe_relpath(normalized_path),
+        "{SNAPSHOT}": _safe_relpath(snapshot_path),
     }
     cmd = [comparator_path] + _apply_substitutions(comparator_spec["args"], mapping)
     env = _apply_env(comparator_spec["env"], mapping)
@@ -255,6 +255,14 @@ def _apply_env(env, mapping):
     return result
 
 
+def _safe_relpath(path, start=None):
+    """Return a relpath, falling back to abs path for Windows cross-drive paths."""
+    try:
+        if start is None:
+            return os.path.relpath(path)
+        return os.path.relpath(path, start)
+    except ValueError:
+        return os.path.abspath(path)
 
 
 def _write_failure_log(results_dir, rel_path, stdout, stderr):

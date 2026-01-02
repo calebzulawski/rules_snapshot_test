@@ -14,3 +14,11 @@ py_binary(
     python_version = "PY3",
     visibility = ["//snapshot:__pkg__"],
 )
+
+py_binary(
+    name = "text_normalizer",
+    srcs = ["text_normalizer.py"],
+    main = "text_normalizer.py",
+    python_version = "PY3",
+    visibility = ["//visibility:public"],
+)

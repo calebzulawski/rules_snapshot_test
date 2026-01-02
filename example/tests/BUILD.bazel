@@ -1,4 +1,13 @@
 load("@rules_snapshot_test//snapshot:snapshot_test.bzl", "snapshot_format", "snapshot_test", "update_all")
+load("@rules_snapshot_test//snapshot:normalizers.bzl", "text_normalizer")
+
+text_normalizer(
+    name = "strip_ts_text",
+    replace_text = {
+        r"\s\d{4}.+$": " REDACTED",
+    },
+    line_ending = "unix",
+)
 
 py_binary(
     name = "demo_test",
@@ -9,7 +18,7 @@ py_binary(
 
 snapshot_format(
     name = "text",
-    normalize = ["//tools:strip_ts"],
+    normalize = [":strip_ts_text"],
     compare = "@rules_snapshot_test//compare:text",
 )
 

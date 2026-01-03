@@ -8,8 +8,8 @@ import sys
 
 
 def read_lines(path):
-    with open(path, "r", encoding="utf-8", errors="replace") as handle:
-        return handle.read().splitlines()
+    with open(path, "r", encoding="utf-8", errors="replace", newline="") as handle:
+        return handle.read().splitlines(keepends=True)
 
 
 def main():

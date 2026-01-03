@@ -29,10 +29,9 @@ def text_normalizer(
     for pattern, replacement in (replace_text or {}).items():
         args.extend(["--replace-text", _escape_make(pattern), _escape_make(replacement)])
     if line_ending == "unix":
-        args.extend(["--replace-text", r"\r", ""])
+        args.extend(["--line-ending", "unix"])
     elif line_ending == "windows":
-        args.extend(["--replace-text", r"(?<!\r)\n", r"\r\n"])
-        args.extend(["--replace-text", r"\r(?!\n)", r"\r\n"])
+        args.extend(["--line-ending", "windows"])
     for pattern in include_lines or []:
         args.extend(["--include-line", _escape_make(pattern)])
     for pattern in exclude_lines or []:

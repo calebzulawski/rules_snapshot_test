@@ -37,3 +37,4 @@ jobs:
         if: always()
         with:
           report_paths: 'bazel-testlogs/**/test.xml'
+          follow_symlink: true

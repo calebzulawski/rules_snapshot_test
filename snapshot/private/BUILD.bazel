@@ -22,3 +22,10 @@ py_binary(
     python_version = "PY3",
     visibility = ["//visibility:public"],
 )
+
+load("//snapshot/private:jq_binary.bzl", "jq_binary")
+
+jq_binary(
+    name = "jq",
+    visibility = ["//visibility:public"],
+)

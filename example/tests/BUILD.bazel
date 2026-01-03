@@ -1,5 +1,5 @@
 load("@rules_snapshot_test//snapshot:snapshot_test.bzl", "snapshot_format", "snapshot_test", "update_all")
-load("@rules_snapshot_test//snapshot:normalizers.bzl", "text_normalizer")
+load("@rules_snapshot_test//snapshot:normalizers.bzl", "text_normalizer", "json_normalizer")
 
 text_normalizer(
     name = "strip_ts_text",
@@ -22,11 +22,24 @@ snapshot_format(
     compare = "@rules_snapshot_test//compare:text",
 )
 
+json_normalizer(
+    name = "json_norm",
+    filter = ".timestamps |= map_values(\"REDACTED\")",
+    args = ["--sort-keys"],
+)
+
+snapshot_format(
+    name = "json",
+    normalize = [":json_norm"],
+    compare = "@rules_snapshot_test//compare:text",
+)
+
 snapshot_test(
     name = "demo",
     test = ":demo_test",
     outputs = {
         "data.txt": ":text",
+        "data.json": ":json",
     },
 )
 
@@ -35,6 +48,7 @@ snapshot_test(
     test = ":demo_test",
     outputs = {
         "data.txt": ":text",
+        "data.json": ":json",
     },
 )
 

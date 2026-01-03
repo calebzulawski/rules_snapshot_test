@@ -6,7 +6,6 @@ text_normalizer(
     replace_text = {
         r"\s\d{4}.+$": " REDACTED",
     },
-    line_ending = "unix",
 )
 
 py_binary(

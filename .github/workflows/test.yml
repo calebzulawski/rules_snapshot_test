@@ -28,3 +28,9 @@ jobs:
         run: bazel test //... --test_output=all
         working-directory: example
         shell: bash
+
+      - name: Test report
+        uses: mikepenz/action-junit-report@v5
+        if: always()
+        with:
+          report_paths: 'bazel-testlogs/**/test.xml'

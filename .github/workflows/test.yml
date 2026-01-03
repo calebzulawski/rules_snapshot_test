@@ -36,5 +36,5 @@ jobs:
         uses: mikepenz/action-junit-report@v5
         if: always()
         with:
-          report_paths: 'bazel-testlogs/**/test.xml'
+          report_paths: 'example/bazel-testlogs/**/test.xml'
           follow_symlink: true

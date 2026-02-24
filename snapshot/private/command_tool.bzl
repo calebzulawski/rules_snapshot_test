@@ -1,5 +1,7 @@
+load("//snapshot/private:runfiles.bzl", "executable_runfile_path")
+
 def _rlocation(ctx, target):
-    return ctx.expand_location("$(rlocationpath %s)" % target.label, [target])
+    return executable_runfile_path(ctx, target)
 
 def _merge_runfiles(base, target):
     info = target[DefaultInfo]

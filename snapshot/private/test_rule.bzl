@@ -1,8 +1,9 @@
 load("//snapshot/private:update_rule.bzl", "snapshot_update_rule")
 load("//snapshot/private:command_tool.bzl", "SnapshotCommandInfo")
+load("//snapshot/private:runfiles.bzl", "executable_runfile_path")
 
 def _rlocation(ctx, target):
-    return ctx.expand_location("$(rlocationpath %s)" % target.label, [target])
+    return executable_runfile_path(ctx, target)
 
 def _gather_runfiles(ctx, extra_files):
     runfiles = ctx.runfiles(files = extra_files)
@@ -80,7 +81,6 @@ snapshot_format = rule(
             doc = "Display name used in test output. Defaults to the snapshot_format rule name.",
         ),
         "normalize": attr.label_list(
-            allow_files = True,
             cfg = "exec",
             doc = "Executable targets or snapshot_normalizer rules run sequentially on each matched file, preprocessing the file for comparison.",
         ),

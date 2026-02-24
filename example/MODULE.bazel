@@ -4,6 +4,7 @@ module(
 )
 
 bazel_dep(name = "rules_snapshot_test")
+bazel_dep(name = "rules_python", version = "1.7.0")
 
 local_path_override(
     module_name = "rules_snapshot_test",

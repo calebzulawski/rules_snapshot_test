@@ -112,10 +112,6 @@ def _build_config(ctx):
             "compare": compare_path,
         })
 
-        deps_for_expansion.append(format_target)
-        deps_for_expansion.extend(normalize_targets)
-        deps_for_expansion.append(compare_target)
-
     snapshot_repo = ctx.workspace_name or "_main"
     snapshot_package = ctx.label.package
     snapshot_dir = "snapshots/%s" % ctx.label.name
@@ -145,14 +141,14 @@ def _build_config(ctx):
 def _expand_args(ctx, deps):
     if not ctx.attr.args:
         return []
-    return [ctx.expand_location(arg, deps) for arg in ctx.attr.args]
+    return [ctx.expand_location(arg, deps).replace("$$", "$") for arg in ctx.attr.args]
 
 def _expand_env(ctx, deps):
     if not ctx.attr.env:
         return {}
     expanded = {}
     for key, value in ctx.attr.env.items():
-        expanded[key] = ctx.expand_location(value, deps)
+        expanded[key] = ctx.expand_location(value, deps).replace("$$", "$")
     return expanded
 
 def _snapshot_rule_test_impl(ctx):

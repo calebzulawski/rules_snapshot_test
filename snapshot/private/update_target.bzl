@@ -8,18 +8,21 @@ def snapshot_update_target(name, visibility = None):
     )
 
 
-def update_all(name, visibility = None, testonly = True):
-    """Create a script that updates all snapshots in this package."""
-    labels = []
-    for rule_name, rule in native.existing_rules().items():
-        if rule.get("kind") == "_snapshot_rule_test":
-            labels.append(":" + rule_name)
-    if not labels:
-        fail("update_all found no snapshot_test targets in this package")
+def update_all(name, visibility = None, testonly = True, recursive = False):
+    """Create a script that updates snapshot tests in this package.
+
+    Args:
+      recursive: If True, also update snapshot tests in subpackages.
+    """
+    package = native.package_name()
+    if recursive:
+        pattern = "//{}...".format(package + "/" if package else "")
+    else:
+        pattern = "//{}:*".format(package) if package else "//:*"
 
     snapshot_update_rule(
         name = name,
-        labels = labels,
+        patterns = [pattern],
         testonly = testonly,
         visibility = visibility,
     )

@@ -12,6 +12,8 @@ def _snapshot_update_impl(ctx):
     env = {}
     if ctx.attr.labels:
         env["SNAPSHOT_UPDATE_LABELS"] = "\n".join([str(target.label) for target in ctx.attr.labels])
+    if ctx.attr.patterns:
+        env["SNAPSHOT_UPDATE_PATTERNS"] = "\n".join(ctx.attr.patterns)
 
     return [
         DefaultInfo(executable = launcher, runfiles = runfiles),
@@ -24,6 +26,7 @@ snapshot_update_rule = rule(
     executable = True,
     attrs = {
         "labels": attr.label_list(),
+        "patterns": attr.string_list(),
         "_updater": attr.label(
             executable = True,
             cfg = "target",

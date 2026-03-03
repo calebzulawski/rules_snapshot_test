@@ -30,6 +30,12 @@ def _resolve_labels(workspace, args):
     labels_env = os.environ.get("SNAPSHOT_UPDATE_LABELS")
     if labels_env:
         return [label for label in labels_env.splitlines() if label.strip()]
+    patterns_env = os.environ.get("SNAPSHOT_UPDATE_PATTERNS")
+    if patterns_env:
+        return _resolve_snapshot_labels(
+            workspace,
+            [pattern for pattern in patterns_env.splitlines() if pattern.strip()],
+        )
     if args:
         return _resolve_snapshot_labels(workspace, args)
     return _resolve_snapshot_labels(workspace, ["//..."])
